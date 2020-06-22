@@ -1,7 +1,7 @@
 from telegram.ext import Updater
 import os
-updater = Updater(token=os.environ['TELEGRAM_BOTAPI_TOKEN'], use_context=True)
-# updater = Updater(token="626144048:AAFbDIDqyWbEuHXNC8w8pqOpU9iMNRmsvv0", use_context=True)
+# updater = Updater(token=os.environ['TELEGRAM_BOTAPI_TOKEN'], use_context=True)
+updater = Updater(token="626144048:AAFbDIDqyWbEuHXNC8w8pqOpU9iMNRmsvv0", use_context=True)
 dispatcher = updater.dispatcher
 import logging
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s',
