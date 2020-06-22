@@ -1,5 +1,12 @@
 from telegram.ext import Updater
 import os
+import logging
+
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+logger = logging.getLogger()
+logger.info("Ich bin gestartet!")
 # updater = Updater(token=os.environ['TELEGRAM_BOTAPI_TOKEN'], use_context=True)
 updater = Updater(token="626144048:AAFbDIDqyWbEuHXNC8w8pqOpU9iMNRmsvv0", use_context=True)
 dispatcher = updater.dispatcher
