@@ -37,7 +37,7 @@ caps_handler = CommandHandler('caps', caps)
 dispatcher.add_handler(caps_handler)
 
 def unknown(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="I don't understand that command man")
+    context.bot.send_message(chat_id=update.effective_chat.id, text="I don't understand that command man, thats unfair")
 
 unknown_handler = MessageHandler(Filters.command, unknown)
 dispatcher.add_handler(unknown_handler)
