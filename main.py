@@ -43,6 +43,8 @@ unknown_handler = MessageHandler(Filters.command, unknown)
 dispatcher.add_handler(unknown_handler)
 
 # -----------------------------------------------
+# Basic WebServer for handling Http-Requests
+# Goal: when the bot is asleep on azure (after 30 minutes of inactivity): wake the bot up with a http request to the exposed azure-domain
 
 from http.server import BaseHTTPRequestHandler, HTTPServer  
 import os  
