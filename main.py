@@ -2,6 +2,8 @@ from telegram.ext import Updater
 import os
 import logging
 
+groceriesneeded = []
+
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -29,11 +31,18 @@ from telegram.ext import MessageHandler, Filters
 echo_handler = MessageHandler(Filters.text & (~Filters.command), echo)
 dispatcher.add_handler(echo_handler)
 
-def caps(update, context):
-    text_caps = ' '.join(context.args).upper()
-    context.bot.send_message(chat_id=update.effective_chat.id, text=text_caps)
+def wirbrauchen(update, context):
+    groceriesneeded.append(context.args)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Erfolgreich hinzugefügt")
 
-caps_handler = CommandHandler('caps', caps)
+caps_handler = CommandHandler('wirbrauchen', wirbrauchen)
+dispatcher.add_handler(caps_handler)
+
+def wasbrauchen(update, context):
+  for x in groceriesneeded:
+    context.bot.send_message(chat_id=update.effective_chat.id, text=x)
+
+caps_handler = CommandHandler('wasbrauchen', wasbrauchen)
 dispatcher.add_handler(caps_handler)
 
 def unknown(update, context):
