@@ -142,3 +142,6 @@ cython_debug/
 
 # Docker
 Dockerfile
+
+# local try out
+test.py
