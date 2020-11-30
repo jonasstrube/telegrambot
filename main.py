@@ -35,15 +35,21 @@ def wirbrauchen(update, context):
     groceriesneeded.append(context.args)
     context.bot.send_message(chat_id=update.effective_chat.id, text="Erfolgreich hinzugefügt")
 
-caps_handler = CommandHandler('wirbrauchen', wirbrauchen)
-dispatcher.add_handler(caps_handler)
+wirbrauchen_handler = CommandHandler('wirbrauchen', wirbrauchen)
+dispatcher.add_handler(wirbrauchen_handler)
 
 def wasbrauchen(update, context):
   for x in groceriesneeded:
     context.bot.send_message(chat_id=update.effective_chat.id, text=x)
 
-caps_handler = CommandHandler('wasbrauchen', wasbrauchen)
-dispatcher.add_handler(caps_handler)
+wasbrauchen_handler = CommandHandler('wasbrauchen', wasbrauchen)
+dispatcher.add_handler(wasbrauchen_handler)
+
+def leeren(update, context):
+  groceriesneeded.clear()
+
+leeren_handler = CommandHandler('leeren', leeren)
+dispatcher.add_handler(leeren_handler)
 
 def unknown(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text="I don't understand that command man, thats unfair")
