@@ -145,3 +145,6 @@ Dockerfile
 
 # local try out
 test.py
+
+# continouos deployment
+send_deployment_to_server.py
