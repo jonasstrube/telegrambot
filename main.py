@@ -32,7 +32,13 @@ echo_handler = MessageHandler(Filters.text & (~Filters.command), echo)
 dispatcher.add_handler(echo_handler)
 
 def wirbrauchen(update, context):
-    groceriesneeded.append(context.args)
+    # stick words of user input together to one string with spaces
+    groceries_item = ""
+    for word in context.args:
+      groceries_item = groceries_item + word + " "
+    groceries_item = groceries_item[:-1:]
+
+    groceriesneeded.append(groceries_item)
     context.bot.send_message(chat_id=update.effective_chat.id, text="Erfolgreich hinzugefügt")
 
 wirbrauchen_handler = CommandHandler('wirbrauchen', wirbrauchen)
@@ -89,3 +95,4 @@ def run():
 
 if __name__ == '__main__':  
   run()  
+  
