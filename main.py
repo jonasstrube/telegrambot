@@ -2,7 +2,23 @@ from telegram.ext import Updater
 import os
 import logging
 
+class community:
+  def __init__(self, name, id):
+    self.name = name
+    self.id = id
+    self.members = []
+  
+  def add_member(self, id):
+    members.append(id)
+
+
+#----------initialize database-------------
+
 groceriesneeded = []
+communities = []
+communities.append(community("examplecommunity", 2353254))
+
+#------------------------------------------
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -62,6 +78,30 @@ def leeren(update, context):
 
 leeren_handler = CommandHandler('leeren', leeren)
 dispatcher.add_handler(leeren_handler)
+
+def setcommunity(update, context):
+  if len(context.args) == 1 and context.args[0].isdigit():
+    id = int(context.args[0])
+    community_found = False
+    for community in communities:
+      if community.id == id:
+        user_id = update.message.from_user.id
+        community.add_member(user_id)
+        community_found = True
+    
+    if community_found == True:
+      answer_text = "Fertig! Herzlich willkommen in der Community " + community.name
+    else:
+      #TODO add community (ask user for name before)
+      placeholder_var = 0
+    
+  else:
+    answer_text = "Schreib deine Community-ID direkt hinter den Befehl"
+
+  context.bot.send_message(chat_id=update.effective_chat.id, text=answer_text)
+
+setcommunity_handler = CommandHandler('setcommunity', setcommunity)
+dispatcher.add_handler(setcommunity_handler)
 
 def unknown(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text="I don't understand that command man, thats unfair")
