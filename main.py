@@ -33,20 +33,26 @@ dispatcher.add_handler(echo_handler)
 
 def wirbrauchen(update, context):
     # stick words of user input together to one string with spaces
-    groceries_item = ""
-    for word in context.args:
-      groceries_item = groceries_item + word + " "
-    groceries_item = groceries_item[:-1:]
+    if len(context.args) != 0:
+      groceries_item = ""
+      for word in context.args:
+        groceries_item = groceries_item + word + " "
+      groceries_item = groceries_item[:-1:]
 
-    groceriesneeded.append(groceries_item)
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Erfolgreich hinzugefügt")
+      groceriesneeded.append(groceries_item)
+      
+      answer_text = "Erfolgreich hinzugefügt"
+    else:
+      answer_text = "Schreib deine Einkäufe direkt hinter den Befehl"
 
+    context.bot.send_message(chat_id=update.effective_chat.id, text=answer_text)
 wirbrauchen_handler = CommandHandler('wirbrauchen', wirbrauchen)
 dispatcher.add_handler(wirbrauchen_handler)
 
 def wasbrauchen(update, context):
-  for x in groceriesneeded:
-    context.bot.send_message(chat_id=update.effective_chat.id, text=x)
+  for word in groceriesneeded:
+    if word != '':
+      context.bot.send_message(chat_id=update.effective_chat.id, text=word)
 
 wasbrauchen_handler = CommandHandler('wasbrauchen', wasbrauchen)
 dispatcher.add_handler(wasbrauchen_handler)
