@@ -9,7 +9,7 @@ class community:
     self.members = []
   
   def add_member(self, id):
-    members.append(id)
+    self.members.append(id)
 
 
 #----------initialize database-------------
@@ -83,14 +83,24 @@ def setcommunity(update, context):
   if len(context.args) == 1 and context.args[0].isdigit():
     id = int(context.args[0])
     community_found = False
+    # find community with the id the user gave
     for community in communities:
-      if community.id == id:
-        user_id = update.message.from_user.id
-        community.add_member(user_id)
+      if community.id == id and community_found != True:
         community_found = True
-    
+        current_user_id = update.message.from_user.id
+
     if community_found == True:
-      answer_text = "Fertig! Herzlich willkommen in der Community " + community.name
+      # check if user is already in community
+      user_already_is_in_community = False
+      for user_id in community.members:
+        if current_user_id == user_id and user_already_is_in_community != True:
+          user_already_is_in_community = True
+      
+      if not user_already_is_in_community:
+        community.add_member(current_user_id)
+        answer_text = "Fertig! Herzlich willkommen in der Community " + community.name
+      else:  
+        answer_text = "Du bist schon Teil der Community " + community.name
     else:
       #TODO add community (ask user for name before)
       placeholder_var = 0
