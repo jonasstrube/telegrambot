@@ -1,7 +1,8 @@
-from telegram import Update
-from telegram.ext import CommandHandler, ConversationHandler, MessageHandler, Filters, Updater, CallbackContext
+from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telegram.ext import Handler, CommandHandler, ConversationHandler, MessageHandler, Filters, Updater, CallbackContext
 import os
 import logging
+import random
 
 # -------------set up logging--------------------------------------------
 logging.basicConfig(level=logging.DEBUG,
@@ -26,6 +27,11 @@ groceriesneeded = []
 communities = []
 communities.append(community("examplecommunity", 2353254))
 # ------------------------------------------
+
+# ----------set global variables--------
+
+SETCOMMUNITY_ASKNAME, SETCOMMUNITY_ADDCOMMUNITY = range(2)
+# --------------------------------------
 
 logger.debug("initialization is finished!")
 
@@ -60,49 +66,79 @@ def wasbrauchen(update: Update, context: CallbackContext):
 def leeren(update: Update, context: CallbackContext):
   groceriesneeded.clear()
 
-def setcommunity(update: Update, context: CallbackContext):
+def setcommunity(update: Update, context: CallbackContext) -> int:
   add_new_community_dialog = False
-  # check if given argument is one number
-  if len(context.args) == 1 and context.args[0].isdigit():
-    id = int(context.args[0])
-    community_found = False
-    # find community with the id the user gave
-    for community in communities:
-      if community.id == id and community_found != True:
-        community_found = True
-        current_user_id = update.message.from_user.id
+  current_user_id = update.message.from_user.id
 
-    if community_found == True:
-      # check if user is already in community
-      user_already_is_in_community = False
-      for user_id in community.members:
-        if current_user_id == user_id and user_already_is_in_community != True:
-          user_already_is_in_community = True
-      
-      if not user_already_is_in_community:
+  # check if user is already in community
+  user_already_is_in_community = False
+  for community in communities:
+    for user_id in community.members:
+      if current_user_id == user_id and user_already_is_in_community != True:
+        user_already_is_in_community = True
+
+  if user_already_is_in_community:
+    answer_text = "Du bist schon Teil der Community " + community.name
+  else:
+    # check if given argument is one number
+    if not len(context.args) == 1 or not context.args[0].isdigit():
+      add_new_community_dialog= True
+      answer_text = "Du hast keine Community-ID mitgegeben.\n\nWillst du eine neue Community erstellen?"
+    else:
+      id = int(context.args[0])
+      # find community with the id the user gave
+      community_found = False
+      for community in communities:
+        if community.id == id and community_found != True:
+          community_found = True
+
+      if community_found == False:
+        add_new_community_dialog = True
+        answer_text = "Eine Community mit dieser ID habe ich nicht gefunden.\n\nWillst du eine neue Community erstellen?" 
+      else:
         community.add_member(current_user_id)
         answer_text = "Fertig! Herzlich willkommen in der Community " + community.name
-      else:  
-        answer_text = "Du bist schon Teil der Community " + community.name
-    else:
-      #TODO add community (ask user for name before)
-      add_new_community_dialog = True
-      answer_text = "Eine Community mit dieser ID existiert nicht. Willst du eine neue Community erstellen? (J/N)"
-    
-  else:
-    add_new_community_dialog= True
-    answer_text = "Du hast keine Community-ID mitgegeben. Willst du eine neue Community erstellen? (J/N)"
-
-  context.bot.send_message(chat_id=update.effective_chat.id, text=answer_text)
 
   if add_new_community_dialog == True:
-    placeholder_var = 0
-    # wait for J/N
-    # if J:
-    #   generate community id
-    #   add community to communities
-    #   ask for community name
-    #   give community chosen name 
+    reply_keyboard = [['Ja', 'Nein']]
+    update.message.reply_text(answer_text, reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+    return SETCOMMUNITY_ASKNAME
+  else:
+    update.message.reply_text(answer_text)
+    return ConversationHandler.END
+
+def setcommunity_askname(update: Update, context: CallbackContext) -> int:
+  update.message.reply_text(
+    'Okay. Wie soll deine Community heißen?', reply_markup=ReplyKeyboardRemove()
+  )
+
+  return SETCOMMUNITY_ADDCOMMUNITY
+
+def setcommunity_addcommunity(update: Update, context: CallbackContext) -> int:
+
+  #   generate community id
+  id_base = random.randint(10000, 99999)
+  id_control = round(id_base / 10000) - 1
+  id = id_base * 10 + id_control
+
+  new_community = community(update.message.text, id)
+  new_community.members.append(update.message.from_user.id)
+  
+  #   add community to communities
+  communities.append(new_community)
+  
+  update.message.reply_text(
+    'Fertig! Herzlich Willkommen in deiner neuen Community:\n\n' + new_community.name
+  )
+  return ConversationHandler.END
+
+def conversation_cancel_generic(update: Update, context: CallbackContext) -> int:
+  update.message.reply_text(
+      'Okay', reply_markup=ReplyKeyboardRemove()
+  )
+
+  return ConversationHandler.END
+
 
 def unknown(update: Update, context: CallbackContext):
     context.bot.send_message(chat_id=update.effective_chat.id, text="I don't understand that command man, thats unfair")
@@ -112,13 +148,24 @@ def main() -> None:
   dispatcher = updater.dispatcher
 
   dispatcher.add_handler(CommandHandler('start', start))
-  dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), echo))
   dispatcher.add_handler(CommandHandler('wirbrauchen', wirbrauchen))
   dispatcher.add_handler(CommandHandler('wasbrauchen', wasbrauchen))
   dispatcher.add_handler(CommandHandler('leeren', leeren))
-  dispatcher.add_handler(CommandHandler('setcommunity', setcommunity))
-  dispatcher.add_handler(MessageHandler(Filters.command, unknown))
+  # dispatcher.add_handler(CommandHandler('setcommunity', setcommunity))
 
+  conv_handler_setcommunity = ConversationHandler(
+        entry_points = [CommandHandler('setcommunity', setcommunity)],
+        states = { 
+          SETCOMMUNITY_ASKNAME: [MessageHandler(Filters.regex('^(Ja)$'), setcommunity_askname)], 
+          SETCOMMUNITY_ADDCOMMUNITY: [MessageHandler(Filters.text & ~Filters.command, setcommunity_addcommunity)]
+        },
+        fallbacks = [MessageHandler(Filters.regex('^(Nein)$'), conversation_cancel_generic)]
+    )
+  dispatcher.add_handler(conv_handler_setcommunity)
+
+  # must be last handlers: handlers for unknown commands and messages
+  dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), echo))
+  dispatcher.add_handler(MessageHandler(Filters.command, unknown))
 
   # ------- start the bot ------------------------
   updater.start_polling()
