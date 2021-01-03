@@ -80,6 +80,8 @@ leeren_handler = CommandHandler('leeren', leeren)
 dispatcher.add_handler(leeren_handler)
 
 def setcommunity(update, context):
+  add_new_community_dialog = False
+  # check if given argument is one number
   if len(context.args) == 1 and context.args[0].isdigit():
     id = int(context.args[0])
     community_found = False
@@ -103,12 +105,23 @@ def setcommunity(update, context):
         answer_text = "Du bist schon Teil der Community " + community.name
     else:
       #TODO add community (ask user for name before)
-      placeholder_var = 0
+      add_new_community_dialog = True
+      answer_text = "Eine Community mit dieser ID existiert nicht. Willst du eine neue Community erstellen? (J/N)"
     
   else:
-    answer_text = "Schreib deine Community-ID direkt hinter den Befehl"
+    add_new_community_dialog= True
+    answer_text = "Du hast keine Community-ID mitgegeben. Willst du eine neue Community erstellen? (J/N)"
 
   context.bot.send_message(chat_id=update.effective_chat.id, text=answer_text)
+
+  if add_new_community_dialog == True:
+    placeholder_var = 0
+    # wait for J/N
+    # if J:
+    #   generate community id
+    #   add community to communities
+    #   ask for community name
+    #   give community chosen name 
 
 setcommunity_handler = CommandHandler('setcommunity', setcommunity)
 dispatcher.add_handler(setcommunity_handler)
@@ -118,4 +131,3 @@ def unknown(update, context):
 
 unknown_handler = MessageHandler(Filters.command, unknown)
 dispatcher.add_handler(unknown_handler)
-  
