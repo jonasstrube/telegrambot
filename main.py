@@ -118,37 +118,4 @@ def unknown(update, context):
 
 unknown_handler = MessageHandler(Filters.command, unknown)
 dispatcher.add_handler(unknown_handler)
-
-# -----------------------------------------------
-# Basic WebServer for handling Http-Requests
-# Goal: when the bot is asleep on azure (after 30 minutes of inactivity): wake the bot up with a http request to the exposed azure-domain
-
-from http.server import BaseHTTPRequestHandler, HTTPServer  
-import os  
-  
-#Create custom HTTPRequestHandler class  
-class MyHTTPRequestHandler(BaseHTTPRequestHandler):  
-
-  #handle GET command  
-  def do_GET(self): 
-    #send code 200 response  
-    self.send_response(200)  
-
-    #send header first  
-    self.send_header('Content-type','text-html')  
-    self.end_headers() 
-    return  
-
-def run():  
-  print('http server is starting...')  
-  
-  #ip and port of server  
-  #by default http server port is 80  
-  server_address = ('', 8000)  
-  httpd = HTTPServer(server_address, MyHTTPRequestHandler)  
-  print('http server is running...')  
-  httpd.serve_forever()  
-
-if __name__ == '__main__':  
-  run()  
   
