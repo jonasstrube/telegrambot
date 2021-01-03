@@ -16,16 +16,12 @@ class community:
     self.name = name
     self.id = id
     self.members = []
-  
-  def add_member(self, id: int):
-    self.members.append(id)
+    self.groceriesneeded = []
 # ---------------------------------------------------------------
 
 
 # ----------initialize database-------------
-groceriesneeded = []
 communities = []
-communities.append(community("examplecommunity", 2353254))
 # ------------------------------------------
 
 # ----------set global variables--------
@@ -35,6 +31,13 @@ SETCOMMUNITY_ASKNAME, SETCOMMUNITY_ADDCOMMUNITY = range(2)
 
 logger.debug("initialization is finished!")
 
+def find_community(user_id: int) -> community:
+  for current_community in communities:
+    for member_id in current_community.members:
+      if user_id == member_id:
+        return current_community
+  return
+
 def start(update: Update, context: CallbackContext):
     logger.info("start aufgerufen Vier")
     context.bot.send_message(chat_id=update.effective_chat.id, text="Hallo Welt!")
@@ -43,46 +46,54 @@ def echo(update: Update, context: CallbackContext):
     context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
 
 def wirbrauchen(update: Update, context: CallbackContext):
-    # stick words of user input together to one string with spaces
-    if len(context.args) != 0:
-      groceries_item = ""
-      for word in context.args:
-        groceries_item = groceries_item + word + " "
-      groceries_item = groceries_item[:-1:]
-
-      groceriesneeded.append(groceries_item)
-      
-      answer_text = "Erfolgreich hinzugefügt"
+    user_community = find_community(update.message.from_user.id)
+    if not user_community:
+      answer_text = "Du gehörst noch zu keiner Community. Füge dich zu einer hinzu mit dem Befehl /setcommunity"
     else:
-      answer_text = "Schreib deine Einkäufe direkt hinter den Befehl"
+      # stick words of user input together to one string with spaces
+      if len(context.args) == 0:
+        answer_text = "Schreib deine Einkäufe direkt hinter den Befehl"
+      else:
+        groceries_item = ""
+        for word in context.args:
+          groceries_item = groceries_item + word + " "
+        groceries_item = groceries_item[:-1:]
+        user_community.groceriesneeded.append(groceries_item)  
+        answer_text = "Erfolgreich hinzugefügt"
 
-    context.bot.send_message(chat_id=update.effective_chat.id, text=answer_text)
+    update.message.reply_text(answer_text)
 
 def wasbrauchen(update: Update, context: CallbackContext):
-  for word in groceriesneeded:
-    if word != '':
-      context.bot.send_message(chat_id=update.effective_chat.id, text=word)
+  user_community = find_community(update.message.from_user.id)
+  if not user_community:
+    update.message.reply_text("Du gehörst noch zu keiner Community. Füge dich zu einer hinzu mit dem Befehl /setcommunity")
+  else:
+    for word in user_community.groceriesneeded:
+      if word != '':
+        update.message.reply_text(word)
 
 def leeren(update: Update, context: CallbackContext):
-  groceriesneeded.clear()
+  user_community = find_community(update.message.from_user.id)
+  if not user_community:
+    reply_text = "Du gehörst noch zu keiner Community. Füge dich zu einer hinzu mit dem Befehl /setcommunity"
+  else:
+    user_community.groceriesneeded.clear()
+    reply_text = "Einkaufsliste erfolgreich geleert"
+  update.message.reply_text(reply_text)
 
 def setcommunity(update: Update, context: CallbackContext) -> int:
   add_new_community_dialog = False
   current_user_id = update.message.from_user.id
 
-  # check if user is already in community
-  user_already_is_in_community = False
-  for community in communities:
-    for user_id in community.members:
-      if current_user_id == user_id and user_already_is_in_community != True:
-        user_already_is_in_community = True
+  # check if user already is in community
+  user_community = find_community(current_user_id)
 
-  if user_already_is_in_community:
-    answer_text = "Du bist schon Teil der Community " + community.name
+  if user_community:
+    answer_text = "Du bist schon Teil der Community " + user_community.name
   else:
     # check if given argument is one number
     if not len(context.args) == 1 or not context.args[0].isdigit():
-      add_new_community_dialog= True
+      add_new_community_dialog = True
       answer_text = "Du hast keine Community-ID mitgegeben.\n\nWillst du eine neue Community erstellen?"
     else:
       id = int(context.args[0])
