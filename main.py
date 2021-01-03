@@ -1,5 +1,5 @@
-from telegram.ext import Updater
-from telegram.ext import CommandHandler, MessageHandler, Filters
+from telegram import Update
+from telegram.ext import CommandHandler, MessageHandler, Filters, Updater, CallbackContext
 import os
 import logging
 
@@ -11,12 +11,12 @@ logger = logging.getLogger()
 
 # -------------declare classes----------------------------------
 class community:
-  def __init__(self, name, id):
+  def __init__(self, name: str, id: int):
     self.name = name
     self.id = id
     self.members = []
   
-  def add_member(self, id):
+  def add_member(self, id: int):
     self.members.append(id)
 # ---------------------------------------------------------------
 
@@ -32,16 +32,16 @@ logger.debug("initialization is finished!")
 updater = Updater(token=os.environ['TELEGRAM_BOTAPI_TOKEN'], use_context=True)
 dispatcher = updater.dispatcher
 
-def start(update, context):
+def start(update: Update, context: CallbackContext):
     logger.info("start aufgerufen Vier")
     context.bot.send_message(chat_id=update.effective_chat.id, text="Hallo Welt!")
 dispatcher.add_handler(CommandHandler('start', start))
 
-def echo(update, context):
+def echo(update: Update, context: CallbackContext):
     context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
 dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), echo))
 
-def wirbrauchen(update, context):
+def wirbrauchen(update: Update, context: CallbackContext):
     # stick words of user input together to one string with spaces
     if len(context.args) != 0:
       groceries_item = ""
@@ -58,17 +58,17 @@ def wirbrauchen(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text=answer_text)
 dispatcher.add_handler(CommandHandler('wirbrauchen', wirbrauchen))
 
-def wasbrauchen(update, context):
+def wasbrauchen(update: Update, context: CallbackContext):
   for word in groceriesneeded:
     if word != '':
       context.bot.send_message(chat_id=update.effective_chat.id, text=word)
 dispatcher.add_handler(CommandHandler('wasbrauchen', wasbrauchen))
 
-def leeren(update, context):
+def leeren(update: Update, context: CallbackContext):
   groceriesneeded.clear()
 dispatcher.add_handler(CommandHandler('leeren', leeren))
 
-def setcommunity(update, context):
+def setcommunity(update: Update, context: CallbackContext):
   add_new_community_dialog = False
   # check if given argument is one number
   if len(context.args) == 1 and context.args[0].isdigit():
@@ -113,7 +113,7 @@ def setcommunity(update, context):
     #   give community chosen name 
 dispatcher.add_handler(CommandHandler('setcommunity', setcommunity))
 
-def unknown(update, context):
+def unknown(update: Update, context: CallbackContext):
     context.bot.send_message(chat_id=update.effective_chat.id, text="I don't understand that command man, thats unfair")
 dispatcher.add_handler(MessageHandler(Filters.command, unknown))
 
