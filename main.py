@@ -1,7 +1,15 @@
 from telegram.ext import Updater
+from telegram.ext import CommandHandler, MessageHandler, Filters
 import os
 import logging
 
+# -------------set up logging--------------------------------------------
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger()
+# ----------------------------------------------------------------------------
+
+# -------------declare classes----------------------------------
 class community:
   def __init__(self, name, id):
     self.name = name
@@ -10,42 +18,28 @@ class community:
   
   def add_member(self, id):
     self.members.append(id)
+# ---------------------------------------------------------------
 
 
-#----------initialize database-------------
-
+# ----------initialize database-------------
 groceriesneeded = []
 communities = []
 communities.append(community("examplecommunity", 2353254))
+# ------------------------------------------
 
-#------------------------------------------
+logger.debug("initialization is finished!")
 
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-logger = logging.getLogger()
-logger.info("Ich bin gestartet!")
 updater = Updater(token=os.environ['TELEGRAM_BOTAPI_TOKEN'], use_context=True)
 dispatcher = updater.dispatcher
-import logging
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s',
-                     level=logging.INFO)
-logger = logging.getLogger()
+
 def start(update, context):
     logger.info("start aufgerufen Vier")
     context.bot.send_message(chat_id=update.effective_chat.id, text="Hallo Welt!")
-
-from telegram.ext import CommandHandler
-start_handler = CommandHandler('start', start)
-dispatcher.add_handler(start_handler)
-updater.start_polling()
+dispatcher.add_handler(CommandHandler('start', start))
 
 def echo(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
-
-from telegram.ext import MessageHandler, Filters
-echo_handler = MessageHandler(Filters.text & (~Filters.command), echo)
-dispatcher.add_handler(echo_handler)
+dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), echo))
 
 def wirbrauchen(update, context):
     # stick words of user input together to one string with spaces
@@ -62,22 +56,17 @@ def wirbrauchen(update, context):
       answer_text = "Schreib deine Einkäufe direkt hinter den Befehl"
 
     context.bot.send_message(chat_id=update.effective_chat.id, text=answer_text)
-wirbrauchen_handler = CommandHandler('wirbrauchen', wirbrauchen)
-dispatcher.add_handler(wirbrauchen_handler)
+dispatcher.add_handler(CommandHandler('wirbrauchen', wirbrauchen))
 
 def wasbrauchen(update, context):
   for word in groceriesneeded:
     if word != '':
       context.bot.send_message(chat_id=update.effective_chat.id, text=word)
-
-wasbrauchen_handler = CommandHandler('wasbrauchen', wasbrauchen)
-dispatcher.add_handler(wasbrauchen_handler)
+dispatcher.add_handler(CommandHandler('wasbrauchen', wasbrauchen))
 
 def leeren(update, context):
   groceriesneeded.clear()
-
-leeren_handler = CommandHandler('leeren', leeren)
-dispatcher.add_handler(leeren_handler)
+dispatcher.add_handler(CommandHandler('leeren', leeren))
 
 def setcommunity(update, context):
   add_new_community_dialog = False
@@ -122,12 +111,11 @@ def setcommunity(update, context):
     #   add community to communities
     #   ask for community name
     #   give community chosen name 
-
-setcommunity_handler = CommandHandler('setcommunity', setcommunity)
-dispatcher.add_handler(setcommunity_handler)
+dispatcher.add_handler(CommandHandler('setcommunity', setcommunity))
 
 def unknown(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text="I don't understand that command man, thats unfair")
+dispatcher.add_handler(MessageHandler(Filters.command, unknown))
 
-unknown_handler = MessageHandler(Filters.command, unknown)
-dispatcher.add_handler(unknown_handler)
+# ------- start the bot ------------------------
+updater.start_polling()
