@@ -132,13 +132,12 @@ def setcommunity_addcommunity(update: Update, context: CallbackContext) -> int:
   )
   return ConversationHandler.END
 
-def conversation_cancel_generic(update: Update, context: CallbackContext) -> int:
+def setcommunity_cancel(update: Update, context: CallbackContext) -> int:
   update.message.reply_text(
-      'Okay', reply_markup=ReplyKeyboardRemove()
+      "Okay. Wenn du hinter /setcommunity direkt die Community-ID schreibst, kannst du dich zu einer Community hinzufügen. Beispiel:\n\n/setcommunity 123456", reply_markup=ReplyKeyboardRemove()
   )
 
   return ConversationHandler.END
-
 
 def unknown(update: Update, context: CallbackContext):
     context.bot.send_message(chat_id=update.effective_chat.id, text="I don't understand that command man, thats unfair")
@@ -151,7 +150,6 @@ def main() -> None:
   dispatcher.add_handler(CommandHandler('wirbrauchen', wirbrauchen))
   dispatcher.add_handler(CommandHandler('wasbrauchen', wasbrauchen))
   dispatcher.add_handler(CommandHandler('leeren', leeren))
-  # dispatcher.add_handler(CommandHandler('setcommunity', setcommunity))
 
   conv_handler_setcommunity = ConversationHandler(
         entry_points = [CommandHandler('setcommunity', setcommunity)],
@@ -159,7 +157,7 @@ def main() -> None:
           SETCOMMUNITY_ASKNAME: [MessageHandler(Filters.regex('^(Ja)$'), setcommunity_askname)], 
           SETCOMMUNITY_ADDCOMMUNITY: [MessageHandler(Filters.text & ~Filters.command, setcommunity_addcommunity)]
         },
-        fallbacks = [MessageHandler(Filters.regex('^(Nein)$'), conversation_cancel_generic)]
+        fallbacks = [MessageHandler(Filters.regex('^(Nein)$'), setcommunity_cancel)]
     )
   dispatcher.add_handler(conv_handler_setcommunity)
 
