@@ -1,5 +1,5 @@
 from telegram import Update
-from telegram.ext import CommandHandler, MessageHandler, Filters, Updater, CallbackContext
+from telegram.ext import CommandHandler, ConversationHandler, MessageHandler, Filters, Updater, CallbackContext
 import os
 import logging
 
@@ -29,17 +29,12 @@ communities.append(community("examplecommunity", 2353254))
 
 logger.debug("initialization is finished!")
 
-updater = Updater(token=os.environ['TELEGRAM_BOTAPI_TOKEN'], use_context=True)
-dispatcher = updater.dispatcher
-
 def start(update: Update, context: CallbackContext):
     logger.info("start aufgerufen Vier")
     context.bot.send_message(chat_id=update.effective_chat.id, text="Hallo Welt!")
-dispatcher.add_handler(CommandHandler('start', start))
 
 def echo(update: Update, context: CallbackContext):
     context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
-dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), echo))
 
 def wirbrauchen(update: Update, context: CallbackContext):
     # stick words of user input together to one string with spaces
@@ -56,17 +51,14 @@ def wirbrauchen(update: Update, context: CallbackContext):
       answer_text = "Schreib deine Einkäufe direkt hinter den Befehl"
 
     context.bot.send_message(chat_id=update.effective_chat.id, text=answer_text)
-dispatcher.add_handler(CommandHandler('wirbrauchen', wirbrauchen))
 
 def wasbrauchen(update: Update, context: CallbackContext):
   for word in groceriesneeded:
     if word != '':
       context.bot.send_message(chat_id=update.effective_chat.id, text=word)
-dispatcher.add_handler(CommandHandler('wasbrauchen', wasbrauchen))
 
 def leeren(update: Update, context: CallbackContext):
   groceriesneeded.clear()
-dispatcher.add_handler(CommandHandler('leeren', leeren))
 
 def setcommunity(update: Update, context: CallbackContext):
   add_new_community_dialog = False
@@ -111,11 +103,30 @@ def setcommunity(update: Update, context: CallbackContext):
     #   add community to communities
     #   ask for community name
     #   give community chosen name 
-dispatcher.add_handler(CommandHandler('setcommunity', setcommunity))
 
 def unknown(update: Update, context: CallbackContext):
     context.bot.send_message(chat_id=update.effective_chat.id, text="I don't understand that command man, thats unfair")
-dispatcher.add_handler(MessageHandler(Filters.command, unknown))
 
-# ------- start the bot ------------------------
-updater.start_polling()
+def main() -> None:
+  updater = Updater(token=os.environ['TELEGRAM_BOTAPI_TOKEN'], use_context=True)
+  dispatcher = updater.dispatcher
+
+  dispatcher.add_handler(CommandHandler('start', start))
+  dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), echo))
+  dispatcher.add_handler(CommandHandler('wirbrauchen', wirbrauchen))
+  dispatcher.add_handler(CommandHandler('wasbrauchen', wasbrauchen))
+  dispatcher.add_handler(CommandHandler('leeren', leeren))
+  dispatcher.add_handler(CommandHandler('setcommunity', setcommunity))
+  dispatcher.add_handler(MessageHandler(Filters.command, unknown))
+
+
+  # ------- start the bot ------------------------
+  updater.start_polling()
+
+  # Run the bot until you press Ctrl-C or the process receives SIGINT,
+  # SIGTERM or SIGABRT. This should be used most of the time, since
+  # start_polling() is non-blocking and will stop the bot gracefully.
+  updater.idle()
+
+if __name__ == '__main__':
+    main()
