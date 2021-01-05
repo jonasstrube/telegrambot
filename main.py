@@ -139,13 +139,19 @@ def setcommunity_addcommunity(update: Update, context: CallbackContext) -> int:
   communities.append(new_community)
   
   update.message.reply_text(
-    'Fertig! Herzlich Willkommen in deiner neuen Community:\n\n' + new_community.name
+    'Fertig! Herzlich Willkommen in deiner neuen Community ' + new_community.name
+    + '.\n\nGib deinen Freunden eure Community-ID, damit sie der Community beitreten können:'
   )
+
+  update.message.reply_text(
+    new_community.id
+  )
+
   return ConversationHandler.END
 
 def setcommunity_cancel(update: Update, context: CallbackContext) -> int:
   update.message.reply_text(
-      "Okay. Wenn du hinter /setcommunity direkt die Community-ID schreibst, kannst du dich zu einer Community hinzufügen. Beispiel:\n\n/setcommunity 123456", reply_markup=ReplyKeyboardRemove()
+      "Okay. Wenn du hinter /setcommunity direkt die Community-ID schreibst, kannst du dich direkt zu einer Community hinzufügen. Beispiel:\n\n/setcommunity 123456", reply_markup=ReplyKeyboardRemove()
   )
 
   return ConversationHandler.END
