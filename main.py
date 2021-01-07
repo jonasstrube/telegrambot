@@ -127,8 +127,10 @@ def setcommunity_askname(update: Update, context: CallbackContext) -> int:
 
 def setcommunity_addcommunity(update: Update, context: CallbackContext) -> int:
 
-  #   generate community id
-  id_base = random.randint(10000, 99999)
+  #   generate community id with one control digit
+  allowed_values = list(range(100000, 1000000)) # id can be 100000 to 999999, without 123456 (bcs thats the example that users see)
+  allowed_values.remove(123456)
+  id_base = random.choice(allowed_values)
   id_control = round(id_base / 10000) - 1
   id = id_base * 10 + id_control
 
