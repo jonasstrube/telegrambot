@@ -85,30 +85,24 @@ def setcommunity(update: Update, context: CallbackContext) -> int:
   add_new_community_dialog = False
   current_user_id = update.message.from_user.id
 
-  # check if user already is in community
-  user_community = find_community(current_user_id)
-
-  if user_community:
-    answer_text = "Du bist schon Teil der Community " + user_community.name
+  # check if given argument is one number
+  if not len(context.args) == 1 or not context.args[0].isdigit():
+    add_new_community_dialog = True
+    answer_text = "Du hast keine Community-ID mitgegeben.\n\nWillst du eine neue Community erstellen?"
   else:
-    # check if given argument is one number
-    if not len(context.args) == 1 or not context.args[0].isdigit():
-      add_new_community_dialog = True
-      answer_text = "Du hast keine Community-ID mitgegeben.\n\nWillst du eine neue Community erstellen?"
-    else:
-      id = int(context.args[0])
-      # find community with the id the user gave
-      community_found = False
-      for community in communities:
-        if community.id == id and community_found != True:
-          community_found = True
+    id = int(context.args[0])
+    # find community with the id the user gave
+    community_found = False
+    for community in communities:
+      if community.id == id and community_found != True:
+        community_found = True
 
-      if community_found == False:
-        add_new_community_dialog = True
-        answer_text = "Eine Community mit dieser ID habe ich nicht gefunden.\n\nWillst du eine neue Community erstellen?" 
-      else:
-        community.add_member(current_user_id)
-        answer_text = "Fertig! Herzlich willkommen in der Community " + community.name
+    if community_found == False:
+      add_new_community_dialog = True
+      answer_text = "Eine Community mit dieser ID habe ich nicht gefunden.\n\nWillst du eine neue Community erstellen?" 
+    else:
+      community.add_member(current_user_id)
+      answer_text = "Fertig! Herzlich willkommen in der Community " + community.name
 
   if add_new_community_dialog == True:
     reply_keyboard = [['Ja', 'Nein']]
